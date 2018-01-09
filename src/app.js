@@ -1,117 +1,113 @@
-console.log("app.js is running");
-
-//JSX - JS XML 
-
-const appObject = {
-    title:"Indecision App!",
-    options:[]
-}
-
-const onFormSubmit = (e) =>{
-    e.preventDefault();
-    
-    const option = e.target.elements.option.value;
-
-    if(option){
-        appObject.options.push(option);
-        e.target.elements.option.value = '';
-        FormClickApp();
+const obj = {
+    name:'vikima',
+    getName(){
+        return this.name;
     }
 };
-const RemoveAll = ()=>{
-    appObject.options = [];
-    FormClickApp();
-};
+let name = obj.getName();
+let name2 = obj.getName.bind({name:'sdf'});
+console.log(name2());
 
-const onMakeDecision = () =>{
-    const randomNum = Math.floor(Math.random() * appObject.options.length);
-    const option = appObject.options[randomNum];
-    alert(option);
-};
-let appRoot = document.getElementById('app');
-
-const FormClickApp = () =>{
-    const template = (
-        <div>
-            <h1>{appObject.title}</h1>
-            {appObject.subtitle && <p>{appObject.subtitle}</p>}
-            <p>{appObject.options.length > 0 ? "Here are your options":"No options"}</p>
-            <button disabled={appObject.options.length == 0} onClick = {onMakeDecision}>What should I do</button>
-            <button onClick = {RemoveAll}> Remove All</button>
-            <ol>
-                {
-                    appObject.options.map((option) =>{
-                        return <li key = {option}>{option}</li>
-                    })
-                }
-            </ol>
-            <form onSubmit = {onFormSubmit} >  
-                <input type="text" name="option"/>
-                <button>Add Option</button>
-            </form>
-            
-        </div>
+class IndecisionApp extends React.Component{
+    render(){
+        const title = 'Indecision';
+        const subtitle = 'Put your life in the hand of a computer';
+        const options = ['Thing one', 'Thing Two'];
+        return (
+            <div>
+                <Header title= {title} subtitle = {subtitle}/>
+                <Action/>
+                <Options options = {options}/>
+                <AddOptions/>
+            </div>
+        )
+    }
+}
+class Header extends React.Component { 
+    render(){
+        return (
+            <div>
+                <h1> {this.props.title}</h1>
+                <h2>{this.props.subtitle}</h2>
+            </div>
         );
-
-    ReactDOM.render(template,appRoot); 
-
-};
-
-FormClickApp();
-/*
-let user ={
-    name: "CHENG",
-    age: 24, 
-    location: " Houston"
-};
-function getLocation(location){
-    if(location)
-        return <p>Location:{location}</p>;
+    }
 }
 
-const template2 = (
+class Action extends React.Component{
+    handlePick(){
+        alert("sdf");
+    }
+    render(){
+        return (
+            <div>
+                <button onClick={this.handlePick}> What should I do?</button>
+            </div>
+        )
+    }
+}
+
+class Options extends React.Component{
+    constructor(props){
+        super(props);
+        this.RemoveAll = this.RemoveAll.bind(this);//只bind一次
+    }
+    RemoveAll(){
+        console.log(this.props.options);
+        alert("remove");
+    }
+    render(){
+        return (
+            <div>
+            {
+                this.props.options.map((option) =>
+                <Option key={option} optionText={option}/>)
+            }
+                <button onClick = {this.RemoveAll}> RemoveAll</button>
+            </div>
+        );
+    }
+}
+
+class Option extends React.Component{
+    render(){
+        return (
+            <div>
+                <p>{this.props.optionText}</p>
+            </div>
+        )
+    }
+}
+
+class AddOptions extends React.Component{
+    AddOptions(e){
+        e.preventDefault();
+
+        const value = e.target.elements.option.value.trim();
+        
+
+        if(value)
+            alert(value);
+    }
+    render(){
+        return (
+            <div>
+                <form onSubmit = {this.AddOptions}>
+                    <input type="text" name="option"/>
+                    <button>Add option</button>
+                </form>
+                
+            </div>
+        );
+    }
+}
+const jsx = (
     <div>
-        <h1>{user.name? user.name : 'Anonymous'}</h1> 
-        {(user.age && user.age >= 18) && <p>Age:{user.age}</p>}
-        {getLocation(user.location)}
+        <Header/>
+        <Action/>
+        <Options/>
+        <AddOptions/>
     </div>
-)*/
-/*
-const myid = "my-id"; 
-let count = 0;
-const addOne = () =>{
-    count = count + 1;
-    renderCounterApp();
-};
-
-const minusOne = () =>{
-    count --;
-    renderCounterApp();
-}
-const reset = ()=>{
-    count = 0;
-    renderCounterApp();
-}
-
-
-
-let appRoot2 = document.getElementById('app2');
-//ReactDOM.render(template,appRoot); // render jsx 到 id所在的地方
-//ReactDOM.render(template2,appRoot2);
-//
-
-
-const renderCounterApp = () =>{
-    const templateTwo = (  //this is an object
-        <div>
-            <h1>Count:{count}</h1>
-            <button id={myid} className = "button" onClick={addOne}>+1</button>
-            <button onClick = {minusOne}> -1 </button>
-            <button onClick = {reset}> Reset </button>
-        </div>
-    );
-
-    ReactDOM.render(templateTwo,appRoot2);
-};
-
-renderCounterApp();*/
+)
+//ReactDOM.render(jsx,document.getElementById('app'));
+ReactDOM.render(<IndecisionApp/>,document.getElementById('app'));
