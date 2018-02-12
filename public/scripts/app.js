@@ -29,18 +29,65 @@ var IndecisionApp = function (_React$Component) {
         _this.handlePick = _this.handlePick.bind(_this);
         _this.handleDeleteOptions = _this.handleDeleteOptions.bind(_this);
         _this.handleAddOption = _this.handleAddOption.bind(_this);
+        _this.handleDeleteOptionSingle = _this.handleDeleteOptionSingle.bind(_this);
         _this.state = {
-            options: []
+            options: props.options
         };
         return _this;
     }
 
     _createClass(IndecisionApp, [{
+        key: 'componentDidMount',
+        value: function componentDidMount() {
+            try {
+                var json = localStorage.getItem('options');
+                var options = JSON.parse(json);
+                if (options) {
+                    this.setState(function () {
+                        return { options: options };
+                    });
+                }
+            } catch (e) {
+                // do nothing at all
+            }
+        }
+    }, {
+        key: 'componentDidUpdate',
+        value: function componentDidUpdate(prevProps, prevState) {
+            // will only be show after props / status is changed
+            if (prevState.options.length !== this.state.options.length) {
+                var json = JSON.stringify(this.state.options);
+                localStorage.setItem('options', json);
+            }
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            // will only execute when  the given component disappears
+            console.log("componnetWillUnmount");
+        }
+    }, {
         key: 'handleDeleteOptions',
         value: function handleDeleteOptions() {
+            /*    this.setState(()=>{
+                    return {
+                        options : []
+                    }
+                });*/
             this.setState(function () {
                 return {
                     options: []
+                };
+            });
+        }
+    }, {
+        key: 'handleDeleteOptionSingle',
+        value: function handleDeleteOptionSingle(optionToremove) {
+            this.setState(function (preState) {
+                return {
+                    options: preState.options.filter(function (option) {
+                        return optionToremove !== option;
+                    })
                 };
             });
         }
@@ -63,10 +110,15 @@ var IndecisionApp = function (_React$Component) {
                 return 'This option already exist';
             }
             this.setState(function (preState) {
-                return {
+                return { //突然发现变量名不是很重要，似乎放再这里就是prev的意思
                     options: preState.options.concat(option)
                 };
             });
+            /*   this.setState((preState)=>{
+                   return{
+                       options : preState.options.concat(option)
+                   }
+               });*/
         }
     }, {
         key: 'render',
@@ -84,7 +136,8 @@ var IndecisionApp = function (_React$Component) {
                 }),
                 React.createElement(Options, {
                     options: this.state.options,
-                    handleDeleteOptions: this.handleDeleteOptions
+                    handleDeleteOptions: this.handleDeleteOptions,
+                    handleDeleteOptionSingle: this.handleDeleteOptionSingle
                 }),
                 React.createElement(AddOptions, { handleAddOption: this.handleAddOption })
             );
@@ -94,144 +147,156 @@ var IndecisionApp = function (_React$Component) {
     return IndecisionApp;
 }(React.Component);
 
-var Header = function (_React$Component2) {
-    _inherits(Header, _React$Component2);
+IndecisionApp.defaultProps = {
+    options: []
+};
 
-    function Header() {
-        _classCallCheck(this, Header);
+var Header = function Header(props) {
+    return React.createElement(
+        'div',
+        null,
+        React.createElement(
+            'h1',
+            null,
+            ' ',
+            props.title
+        ),
+        props.subtitle && React.createElement(
+            'h2',
+            null,
+            props.subtitle
+        )
+    );
+};
 
-        return _possibleConstructorReturn(this, (Header.__proto__ || Object.getPrototypeOf(Header)).apply(this, arguments));
-    }
-
-    _createClass(Header, [{
-        key: 'render',
-        value: function render() {
-            return React.createElement(
-                'div',
-                null,
-                React.createElement(
-                    'h1',
-                    null,
-                    ' ',
-                    this.props.title
-                ),
-                React.createElement(
-                    'h2',
-                    null,
-                    this.props.subtitle
-                )
+Header.defaultProps = {
+    title: 'Indecision'
+    /*
+    class Header extends React.Component { 
+        render(){
+            return (
+                <div>
+                    <h1> {this.props.title}</h1>
+                    <h2>{this.props.subtitle}</h2>
+                </div>
             );
         }
-    }]);
+    };
+    */
 
-    return Header;
-}(React.Component);
-
-var Action = function (_React$Component3) {
-    _inherits(Action, _React$Component3);
-
-    function Action() {
-        _classCallCheck(this, Action);
-
-        return _possibleConstructorReturn(this, (Action.__proto__ || Object.getPrototypeOf(Action)).apply(this, arguments));
+};var Action = function Action(props) {
+    return React.createElement(
+        'div',
+        null,
+        React.createElement(
+            'button',
+            {
+                onClick: props.handlePick,
+                disabled: !props.hasOptions
+            },
+            'What should I do?'
+        )
+    );
+};
+/*class Action extends React.Component{
+    render(){
+        return (
+            <div>
+                <button 
+                    onClick={this.props.handlePick}
+                    disabled = {!this.props.hasOptions}
+                > 
+                What should I do?
+                </button>
+            </div>
+        )
     }
-
-    _createClass(Action, [{
-        key: 'render',
-        value: function render() {
-            return React.createElement(
-                'div',
-                null,
-                React.createElement(
-                    'button',
-                    {
-                        onClick: this.props.handlePick,
-                        disabled: !this.props.hasOptions
-                    },
-                    'What should I do?'
-                )
-            );
-        }
-    }]);
-
-    return Action;
-}(React.Component);
-
-var Options = function (_React$Component4) {
-    _inherits(Options, _React$Component4);
-
-    function Options() {
-        _classCallCheck(this, Options);
-
-        return _possibleConstructorReturn(this, (Options.__proto__ || Object.getPrototypeOf(Options)).apply(this, arguments));
+}
+*/
+var Options = function Options(props) {
+    return React.createElement(
+        'div',
+        null,
+        props.options.length === 0 && React.createElement(
+            'p',
+            null,
+            ' Please add an option to get started!'
+        ),
+        props.options.map(function (option) {
+            return React.createElement(Option, {
+                key: option,
+                optionText: option,
+                handleDeleteOptionSingle: props.handleDeleteOptionSingle });
+        }),
+        React.createElement(
+            'button',
+            { onClick: props.handleDeleteOptions },
+            ' RemoveAll'
+        )
+    );
+};
+/*class Options extends React.Component{
+ /*   constructor(props){
+        super(props);
+     //   this.RemoveAll = this.RemoveAll.bind(this);//只bind一次
+    }*/
+/*    render(){
+        return (
+            <div>
+            {
+                this.props.options.map((option) =>
+                <Option key={option} optionText={option}/>)
+            }
+                <button onClick = {this.props.handleDeleteOptions}> RemoveAll</button>
+            </div>
+        );
     }
+}*/
 
-    _createClass(Options, [{
-        key: 'render',
-
-        /*   constructor(props){
-               super(props);
-            //   this.RemoveAll = this.RemoveAll.bind(this);//只bind一次
-           }*/
-        value: function render() {
-            return React.createElement(
-                'div',
-                null,
-                this.props.options.map(function (option) {
-                    return React.createElement(Option, { key: option, optionText: option });
-                }),
-                React.createElement(
-                    'button',
-                    { onClick: this.props.handleDeleteOptions },
-                    ' RemoveAll'
-                )
-            );
-        }
-    }]);
-
-    return Options;
-}(React.Component);
-
-var Option = function (_React$Component5) {
-    _inherits(Option, _React$Component5);
-
-    function Option() {
-        _classCallCheck(this, Option);
-
-        return _possibleConstructorReturn(this, (Option.__proto__ || Object.getPrototypeOf(Option)).apply(this, arguments));
+var Option = function Option(props) {
+    return React.createElement(
+        'div',
+        null,
+        React.createElement(
+            'p',
+            null,
+            props.optionText
+        ),
+        React.createElement(
+            'button',
+            {
+                onClick: function onClick(e) {
+                    props.handleDeleteOptionSingle(props.optionText);
+                }
+            },
+            'Delte'
+        )
+    );
+};
+/*
+class Option extends React.Component{
+    render(){
+        return (
+            <div>
+                <p>{this.props.optionText}</p>
+            </div>
+        )
     }
+}*/
 
-    _createClass(Option, [{
-        key: 'render',
-        value: function render() {
-            return React.createElement(
-                'div',
-                null,
-                React.createElement(
-                    'p',
-                    null,
-                    this.props.optionText
-                )
-            );
-        }
-    }]);
-
-    return Option;
-}(React.Component);
-
-var AddOptions = function (_React$Component6) {
-    _inherits(AddOptions, _React$Component6);
+var AddOptions = function (_React$Component2) {
+    _inherits(AddOptions, _React$Component2);
 
     function AddOptions(props) {
         _classCallCheck(this, AddOptions);
 
-        var _this7 = _possibleConstructorReturn(this, (AddOptions.__proto__ || Object.getPrototypeOf(AddOptions)).call(this, props));
+        var _this3 = _possibleConstructorReturn(this, (AddOptions.__proto__ || Object.getPrototypeOf(AddOptions)).call(this, props));
 
-        _this7.AddOptions = _this7.AddOptions.bind(_this7);
-        _this7.state = {
+        _this3.AddOptions = _this3.AddOptions.bind(_this3);
+        _this3.state = {
             error: undefined
         };
-        return _this7;
+        return _this3;
     }
 
     _createClass(AddOptions, [{
@@ -240,10 +305,20 @@ var AddOptions = function (_React$Component6) {
             e.preventDefault();
             var value = e.target.elements.option.value.trim();
             var error = this.props.handleAddOption(value);
-
+            e.target.elements.option.value = "";
             this.setState(function () {
-                return { error: error };
+                return {
+                    error: error
+                };
             });
+
+            if (!error) {
+                e.target.elements.option.value = '';
+            }
+            /*
+            this.setState(() => {
+                return { error }
+            })*/
         }
     }, {
         key: 'render',
@@ -282,4 +357,26 @@ var jsx = React.createElement(
     React.createElement(AddOptions, null)
 );
 //ReactDOM.render(jsx,document.getElementById('app'));
-ReactDOM.render(React.createElement(IndecisionApp, null), document.getElementById('app'));
+
+
+//stateless function components
+/*user = function(){}*/
+var User = function User(props) {
+    return React.createElement(
+        'div',
+        null,
+        React.createElement(
+            'p',
+            null,
+            'Name: ',
+            props.name
+        ),
+        React.createElement(
+            'p',
+            null,
+            'Age: '
+        )
+    );
+};
+ReactDOM.render(React.createElement(User, { name: 'mabel' }), document.getElementById('app2'));
+ReactDOM.render(React.createElement(IndecisionApp /*options= {['devils den','second']}*/, null), document.getElementById('app'));
